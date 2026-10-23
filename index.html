@@ -3,6 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ILDM — Gestão Inteligente</title>
+<style>
+:root{--navy:#101827;--teal:#0d9488;--bg:#f1f5f9;--ink:#172033;--muted:#64748b;--white:#fff;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--navy);color:white;padding:22px 16px;text-align:center}header h1{margin:0;color:#38d9a9;font-size:30px}header p{margin:8px 0 0}
+nav{display:flex;gap:7px;flex-wrap:wrap;padding:12px;background:white;position:sticky;top:0;z-index:2;box-shadow:0 2px 8px #0001}
+button{border:0;border-radius:8px;padding:11px 13px;background:var(--teal);color:white;font-weight:600;cursor:pointer}button.secondary{background:#334155}button.danger{background:var(--red)}
+main{padding:15px;max-width:900px;margin:auto}section{display:none}section.ativa{display:block}.card{background:white;border-radius:12px;padding:16px;margin-bottom:13px;box-shadow:0 2px 7px #00000008}
+h2{font-size:22px;margin:8px 0 15px}h3{margin:4px 0 12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.metric{background:white;padding:15px;border-radius:12px;box-shadow:0 2px 7px #00000008}.metric span{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}.metric strong{font-size:19px;overflow-wrap:anywhere}
+label{display:block;font-size:14px;font-weight:600;margin:10px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;background:white;color:var(--ink)}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.item{padding:11px 0;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}.item:last-child{border-bottom:0}.item small{display:block;color:var(--muted);margin-top:4px}.note{color:var(--muted);font-size:13px;line-height:1.5}.empty{color:var(--muted);padding:10px 0}.positive{color:#047857}.negative{color:#b91c1c}.pill{display:inline-block;border-radius:20px;background:#ccfbf1;color:#115e59;padding:4px 8px;font-size:12px}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header><h1>ILDM</h1><p>Inteligência para vender e crescer</p></header>
+<nav>
+<button onclick="abrir('inicio')">Início</button>
+<button onclick="abrir('clientes')">Clientes</button>
+<button onclick="abrir('produtos')">Produtos</button>
+<button onclick="abrir('vendas')">Vendas</button>
+<button onclick="abrir('financeiro')">Financeiro</button>
+<button onclick="abrir('despesas')">Despesas</button>
+</nav>
+<main>
+<section id="inicio" class="ativa">
+<h2>Painel principal</h2>
+<div class="grid">
+<div class="metric"><span>Clientes cadastrados</span><strong id="totalClientes">0</strong></div>
+<div class="metric"><span>Produtos cadastrados</span><strong id="totalProdutos">0</strong></div>
+<div class="metric"><span>Vendas registradas</span><strong id="totalVendas">0</strong></div>
+<div class="metric"><span>Faturamento</span><strong id="fatInicio">R$ 0,00</strong></div>
+<div class="metric"><span>Lucro bruto</span><strong id="brutoInicio">R$ 0,00</strong></div>
+<div class="metric"><span>Lucro líquido estimado</span><strong id="liquidoInicio">R$ 0,00</strong></div>
+</div>
+<div class="card" style="margin-top:13px"><h3>Assistente ILDM 🤖</h3><p id="dicaIA">Cadastre seus produtos com preço de venda e custo de compra para acompanhar os resultados.</p><p class="note">Este é um painel de apoio automático, ainda sem conexão com uma inteligência artificial externa.</p></div>
+</section>
+
+<section id="clientes">
+<h2>👥 Cadastro de clientes</h2>
+<div class="card">
+<div class="formgrid">
+<div><label for="nomeCliente">Nome do cliente *</label><input id="nomeCliente" placeholder="Nome completo"></div>
+<div><label for="telefoneCliente">Telefone</label><input id="telefoneCliente" placeholder="DDD + número" inputmode="tel"></div>
+<div><label for="emailCliente">E-mail</label><input id="emailCliente" type="email" placeholder="cliente@email.com"></div>
+</div>
+<div class="actions"><button onclick="cadastrarCliente()">Salvar cliente</button></div>
+</div>
+<div class="card"><h3>Clientes cadastrados</h3><div id="listaClientes" class="empty">Nenhum cliente cadastrado.</div></div>
+</section>
+
+<section id="produtos">
+<h2>📦 Produtos e estoque</h2>
+<div class="card">
+<div class="formgrid">
+<div><label for="nomeProduto">Nome do produto *</label><input id="nomeProduto" placeholder="Ex.: Camiseta"></div>
+<div><label for="custoProduto">Custo de compra (R$) *</label><input id="custoProduto" type="number" min="0" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+<div><label for="precoProduto">Preço de venda (R$) *</label><input id="precoProduto" type="number" min="0.01" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+<div><label for="estoqueProduto">Quantidade em estoque *</label><input id="estoqueProduto" type="number" min="0" step="1" placeholder="0" inputmode="numeric"></div>
+</div>
+<div class="actions"><button onclick="cadastrarProduto()">Salvar produto</button></div>
+<p class="note">Informe o custo de compra para que o ILDM calcule o lucro bruto estimado.</p>
+</div>
+<div class="card"><h3>Produtos cadastrados</h3><div id="listaProdutos" class="empty">Nenhum produto cadastrado.</div></div>
+</section>
+
+<section id="vendas">
+<h2>🛒 Registrar venda</h2>
+<div class="card">
+<label for="produtoVenda">Produto *</label><select id="produtoVenda"><option value="">Selecione um produto</option></select>
+<div class="formgrid">
+<div><label for="quantidadeVenda">Quantidade *</label><input id="quantidadeVenda" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+<div><label for="clienteVenda">Cliente (opcional)</label><select id="clienteVenda"><option value="">Venda sem cliente associado</option></select></div>
+<div><label for="valorUnitarioVenda">Preço unitário (R$)</label><input id="valorUnitarioVenda" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Preço cadastrado"></div>
+</div>
+<div class="actions"><button onclick="registrarVenda()">Registrar venda</button></div>
+<p class="note">O estoque será reduzido após registrar. A venda usa o custo atual cadastrado no produto para estimar o lucro.</p>
+</div>
+<div class="card"><h3>Histórico de vendas</h3><div id="listaVendas" class="empty">Nenhuma venda registrada.</div></div>
+</section>
+
+<section id="financeiro">
+<h2>💰 Controle financeiro</h2>
+<div class="grid">
+<div class="metric"><span>Faturamento total</span><strong id="fatFinanceiro">R$ 0,00</strong></div>
+<div class="metric"><span>Custo dos produtos vendidos</span><strong id="custoFinanceiro">R$ 0,00</strong></div>
+<div class="metric"><span>Lucro bruto estimado</span><strong id="brutoFinanceiro">R$ 0,00</strong></div>
+<div class="metric"><span>Despesas registradas</span><strong id="despFinanceiro">R$ 0,00</strong></div>
+<div class="metric"><span>Lucro líquido estimado</span><strong id="liquidoFinanceiro">R$ 0,00</strong></div>
+</div>
+<div class="card" style="margin-top:13px"><h3>Como os valores são calculados</h3>
+<p>Faturamento = soma dos totais das vendas.</p>
+<p>Custo vendido = soma do custo registrado por unidade × quantidade vendida.</p>
+<p>Lucro bruto estimado = faturamento − custo vendido.</p>
+<p>Lucro líquido estimado = lucro bruto estimado − despesas registradas.</p>
+<p class="note">Estimativas para controle interno. Taxas de marketplace, impostos, devoluções e outras despesas precisam ser cadastradas ou consideradas separadamente para chegar ao resultado real.</p></div>
+</section>
+
+<section id="despesas">
+<h2>🧾 Cadastro de despesas</h2>
+<div class="card">
+<div class="formgrid">
+<div><label for="descricaoDespesa">Descrição *</label><input id="descricaoDespesa" placeholder="Ex.: anúncio, embalagem, entrega"></div>
+<div><label for="valorDespesa">Valor (R$) *</label><input id="valorDespesa" type="number" min="0.01" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+<div><label for="dataDespesa">Data</label><input id="dataDespesa" type="date"></div>
+</div>
+<div class="actions"><button onclick="cadastrarDespesa()">Salvar despesa</button></div>
+</div>
+<div class="card"><h3>Histórico de despesas</h3><div id="listaDespesas" class="empty">Nenhuma despesa cadastrada.</div></div>
+</section>
+</main>
+<footer>ILDM — versão inicial de controle comercial. Os dados ficam armazenados neste navegador e neste aparelho.</footer>
+<script>
+const chaves={clientes:"ildm_clientes",produtos:"ildm_produtos",vendas:"ildm_vendas",despesas:"ildm_despesas"};
+function ler(chave){try{return JSON.parse(localStorage.getItem(chave)||"[]")}catch(e){return []}}
+let clientes=ler(chaves.clientes), produtos=ler(chaves.produtos), vendas=ler(chaves.vendas), despesas=ler(chaves.despesas);
+function salvar(){localStorage.setItem(chaves.clientes,JSON.stringify(clientes));localStorage.setItem(chaves.produtos,JSON.stringify(produtos));localStorage.setItem(chaves.vendas,JSON.stringify(vendas));localStorage.setItem(chaves.despesas,JSON.stringify(despesas))}
+function abrir(id){document.querySelectorAll("main section").forEach(s=>s.classList.remove("ativa"));document.getElementById(id).classList.add("ativa");window.scrollTo(0,0)}
+function dinheiro(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function escapar(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function totalFaturamento(){return vendas.reduce((s,v)=>s+Number(v.total||0),0)}
+function totalCusto(){return vendas.reduce((s,v)=>s+Number(v.custoTotal??(Number(v.custoUnitario||0)*Number(v.quantidade||0))),0)}
+function totalDespesas(){return despesas.reduce((s,d)=>s+Number(d.valor||0),0)}
+function cadastrarCliente(){let nome=document.getElementById("nomeCliente").value.trim();if(!nome)return alert("Informe o nome do cliente.");clientes.push({id:Date.now(),nome,telefone:document.getElementById("telefoneCliente").value.trim(),email:document.getElementById("emailCliente").value.trim()});salvar();document.getElementById("nomeCliente").value="";document.getElementById("telefoneCliente").value="";document.getElementById("emailCliente").value="";atualizar()}
+function cadastrarProduto(){let nome=document.getElementById("nomeProduto").value.trim(),custo=Number(document.getElementById("custoProduto").value),preco=Number(document.getElementById("precoProduto").value),estoque=Number(document.getElementById("estoqueProduto").value);if(!nome||document.getElementById("custoProduto").value===""||custo<0||!Number.isFinite(custo)||preco<=0||!Number.isFinite(preco)||document.getElementById("estoqueProduto").value===""||!Number.isInteger(estoque)||estoque<0)return alert("Confira nome, custo, preço de venda e estoque.");produtos.push({id:Date.now(),nome,custo,preco,estoque});salvar();["nomeProduto","custoProduto","precoProduto","estoqueProduto"].forEach(id=>document.getElementById(id).value="");atualizar()}
+function registrarVenda(){let id=Number(document.getElementById("produtoVenda").value),p=produtos.find(x=>x.id===id),q=Number(document.getElementById("quantidadeVenda").value),clienteId=Number(document.getElementById("clienteVenda").value)||null,valorCampo=document.getElementById("valorUnitarioVenda").value,preco=valorCampo===""?p?.preco:Number(valorCampo);if(!p)return alert("Selecione um produto.");if(!Number.isInteger(q)||q<1)return alert("Informe uma quantidade válida.");if(q>p.estoque)return alert("Estoque insuficiente.");if(!Number.isFinite(preco)||preco<=0)return alert("Informe um preço unitário válido.");let cliente=clientes.find(c=>c.id===clienteId);p.estoque-=q;vendas.unshift({id:Date.now(),produtoId:p.id,nome:p.nome,quantidade:q,precoUnitario:preco,custoUnitario:Number(p.custo||0),custoTotal:Number(p.custo||0)*q,total:preco*q,cliente:cliente?cliente.nome:"",data:new Date().toISOString()});salvar();document.getElementById("quantidadeVenda").value="1";document.getElementById("valorUnitarioVenda").value="";atualizar();alert("Venda registrada com sucesso!")}
+function cadastrarDespesa(){let descricao=document.getElementById("descricaoDespesa").value.trim(),valor=Number(document.getElementById("valorDespesa").value),data=document.getElementById("dataDespesa").value||new Date().toISOString().slice(0,10);if(!descricao||document.getElementById("valorDespesa").value===""||!Number.isFinite(valor)||valor<=0)return alert("Informe a descrição e um valor maior que zero.");despesas.unshift({id:Date.now(),descricao,valor,data});salvar();document.getElementById("descricaoDespesa").value="";document.getElementById("valorDespesa").value="";document.getElementById("dataDespesa").value=new Date().toISOString().slice(0,10);atualizar()}
+function atualizar(){let fat=totalFaturamento(),custo=totalCusto(),bruto=fat-custo,desp=totalDespesas(),liquido=bruto-desp;
+document.getElementById("totalClientes").textContent=clientes.length;document.getElementById("totalProdutos").textContent=produtos.length;document.getElementById("totalVendas").textContent=vendas.length;
+document.getElementById("fatInicio").textContent=dinheiro(fat);document.getElementById("brutoInicio").textContent=dinheiro(bruto);document.getElementById("liquidoInicio").textContent=dinheiro(liquido);
+document.getElementById("fatFinanceiro").textContent=dinheiro(fat);document.getElementById("custoFinanceiro").textContent=dinheiro(custo);document.getElementById("brutoFinanceiro").textContent=dinheiro(bruto);document.getElementById("despFinanceiro").textContent=dinheiro(desp);document.getElementById("liquidoFinanceiro").textContent=dinheiro(liquido);
+document.getElementById("dicaIA").textContent=vendas.length?"Você registrou "+vendas.length+" venda(s). Faturamento: "+dinheiro(fat)+"; lucro líquido estimado: "+dinheiro(liquido)+". Confira se todas as despesas foram lançadas.":"Cadastre produtos com custo e preço de venda e registre as vendas para acompanhar seu lucro.";
+document.getElementById("listaClientes").innerHTML=clientes.length?clientes.map(c=>`<div class="item"><strong>${escapar(c.nome)}</strong><small>${escapar(c.telefone||"Sem telefone")} · ${escapar(c.email||"Sem e-mail")}</small></div>`).join(""):'<p class="empty">Nenhum cliente cadastrado.</p>';
+document.getElementById("listaProdutos").innerHTML=produtos.length?produtos.map(p=>`<div class="item"><strong>${escapar(p.nome)}</strong><small>Venda: ${dinheiro(p.preco)} · Custo: ${dinheiro(p.custo)} · Estoque: ${p.estoque}</small></div>`).join(""):'<p class="empty">Nenhum produto cadastrado.</p>';
+document.getElementById("listaVendas").innerHTML=vendas.length?vendas.map(v=>`<div class="item"><strong>${escapar(v.nome)} × ${v.quantidade}</strong><small>${new Date(v.data||Date.now()).toLocaleString("pt-BR")} ${v.cliente?"· Cliente: "+escapar(v.cliente):""}</small><small>Venda: ${dinheiro(v.total)} · Custo estimado: ${dinheiro(v.custoTotal??(Number(v.custoUnitario||0)*Number(v.quantidade||0)))} · Lucro bruto: ${dinheiro(Number(v.total||0)-Number(v.custoTotal??(Number(v.custoUnitario||0)*Number(v.quantidade||0))))}</small></div>`).join(""):'<p class="empty">Nenhuma venda registrada.</p>';
+document.getElementById("listaDespesas").innerHTML=despesas.length?despesas.map(d=>`<div class="item"><strong>${escapar(d.descricao)}</strong><small>${escapar(d.data||"")} · ${dinheiro(d.valor)}</small></div>`).join(""):'<p class="empty">Nenhuma despesa cadastrada.</p>';
+document.getElementById("produtoVenda").innerHTML='<option value="">Selecione um produto</option>'+produtos.map(p=>`<option value="${p.id}">${escapar(p.nome)} — ${dinheiro(p.preco)} (estoque ${p.estoque})</option>`).join("");
+document.getElementById("clienteVenda").innerHTML='<option value="">Venda sem cliente associado</option>'+clientes.map(c=>`<option value="${c.id}">${escapar(c.nome)}</option>`).join("");
+}
+document.getElementById("produtoVenda").addEventListener("change",()=>{let p=produtos.find(x=>x.id===Number(document.getElementById("produtoVenda").value));document.getElementById("valorUnitarioVenda").value=p?p.preco:""});
+document.getElementById("dataDespesa").value=new Date().toISOString().slice(0,10);
+atualizar();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILDM - Gestão Inteligente</title>
 <style>
 body {
