@@ -1,1 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ILDM - Gestão Inteligente</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #172033;
+}
+header {
+  background: #101827;
+  color: white;
+  padding: 24px;
+  text-align: center;
+}
+header h1 { color: #38d9a9; }
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+}
+button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #0d9488;
+  color: white;
+}
+main { padding: 16px; }
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0 12px;
+}
+section { display: none; }
+section.ativa { display: block; }
+</style>
+</head>
+<body>
 
+<header>
+<h1>ILDM</h1>
+<p>Inteligência para vender e crescer</p>
+</header>
+
+<nav>
+<button onclick="abrir('inicio')">Início</button>
+<button onclick="abrir('clientes')">Clientes</button>
+<button onclick="abrir('produtos')">Produtos</button>
+<button onclick="abrir('vendas')">Vendas</button>
+</nav>
+
+<main>
+<section id="inicio" class="ativa">
+<h2>Painel principal</h2>
+<div class="card">
+Clientes cadastrados: <strong id="totalClientes">0</strong>
+</div>
+<div class="card">
+Produtos cadastrados: <strong id="totalProdutos">0</strong>
+</div>
+<div class="card">
+Faturamento: <strong id="faturamento">R$ 0,00</strong>
+</div>
+<div class="card">
+<h3>Assistente ILDM 🤖</h3>
+<p>Cadastre clientes e produtos para começar.</p>
+</div>
+</section>
+
+<section id="clientes">
+<h2>Cadastro de clientes</h2>
+<div class="card">
+<input id="nomeCliente" placeholder="Nome do cliente">
+<input id="telefoneCliente" placeholder="Telefone">
+<button onclick="cadastrarCliente()">Salvar cliente</button>
+<div id="listaClientes"></div>
+</div>
+</section>
+
+<section id="produtos">
+<h2>Cadastro de produtos</h2>
+<div class="card">
+<input id="nomeProduto" placeholder="Nome do produto">
+<input id="precoProduto" type="number" placeholder="Preço de venda">
+<input id="estoqueProduto" type="number" placeholder="Quantidade em estoque">
+<button onclick="cadastrarProduto()">Salvar produto</button>
+<div id="listaProdutos"></div>
+</div>
+</section>
+
+<section id="vendas">
+<h2>Registrar venda</h2>
+<div class="card">
+<input id="produtoVenda" placeholder="Nome do produto">
+<input id="quantidadeVenda" type="number" placeholder="Quantidade">
+<button onclick="registrarVenda()">Registrar venda</button>
+<div id="listaVendas"></div>
+</div>
+</section>
+</main>
+
+<script>
+let clientes = JSON.parse(localStorage.getItem("ildm_clientes") || "[]");
+let produtos = JSON.parse(localStorage.getItem("ildm_produtos") || "[]");
+let vendas = JSON.parse(localStorage.getItem("ildm_vendas") || "[]");
+
+function abrir(id) {
+  document.querySelectorAll("section").forEach(s => s.classList.remove("ativa"));
+  document.getElementById(id).classList.add("ativa");
+}
+
+function cadastrarCliente() {
+  const nome = document.getElementById("nomeCliente").value.trim();
+  const telefone = document.getElementById("telefoneCliente").value.trim();
+  if (!nome) return alert("Digite o nome do cliente.");
+  clientes.push({nome, telefone});
+  salvarDados();
+  document.getElementById("nomeCliente").value = "";
+  document.getElementById("telefoneCliente").value = "";
+  atualizar();
+}
+
+function cadastrarProduto() {
+  const nome = document.getElementById("nomeProduto").value.trim();
+  const preco = Number(document.getElementById("precoProduto").value);
+  const estoque = Number(document.getElementById("estoqueProduto").value);
+  if (!nome || preco <= 0 || estoque < 0) return alert("Confira os dados do produto.");
+  produtos.push({nome, preco, estoque});
+  salvarDados();
+  atualizar();
+}
+
+function registrarVenda() {
+  const nome = document.getElementById("produtoVenda").value.trim();
+  const quantidade = Number(document.getElementById("quantidadeVenda").value);
+  const produto = produtos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+  if (!produto) return alert("Produto não encontrado. Digite o nome cadastrado.");
+  if (!Number.isInteger(quantidade) || quantidade <= 0 || quantidade > produto.estoque)
+    return alert("Confira a quantidade disponível.");
+  produto.estoque -= quantidade;
+  vendas.push({nome: produto.nome, quantidade, total: produto.preco * quantidade});
+  salvarDados();
+  atualizar();
+}
+
+function salvarDados() {
+  localStorage.setItem("ildm_clientes", JSON.stringify(clientes));
+  localStorage.setItem("ildm_produtos", JSON.stringify(produtos));
+  localStorage.setItem("ildm_vendas", JSON.stringify(vendas));
+}
+
+function dinheiro(valor) {
+  return valor.toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+}
+
+function escapar(texto) {
+  return String(texto).replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[c]);
+}
+
+function atualizar() {
+  document.getElementById("totalClientes").textContent = clientes.length;
+  document.getElementById("totalProdutos").textContent = produtos.length;
+
+  document.getElementById("faturamento").textContent =
+    dinheiro(vendas.reduce((s,v) => s + v.total, 0));
+
+  document.getElementById("listaClientes").innerHTML =
+    clientes.map(c => `<p>${escapar(c.nome)} — ${escapar(c.telefone)}</p>`).join("");
+
+  document.getElementById("listaProdutos").innerHTML =
+    produtos.map(p => `<p>${escapar(p.nome)} — ${dinheiro(p.preco)} — Estoque: ${p.estoque}</p>`).join("");
+
+  document.getElementById("listaVendas").innerHTML =
+    vendas.map(v => `<p>${escapar(v.nome)} × ${v.quantidade} = ${dinheiro(v.total)}</p>`).join("");
+}
+atualizar();
+</script>
+
+</body>
+</html>
